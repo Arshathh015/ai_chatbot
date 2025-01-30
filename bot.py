@@ -87,6 +87,7 @@ def main():
             st.experimental_rerun()  # Reload the page when API key is valid
         else:
             st.error("❌ Invalid API Key! Please enter a valid key.")
+            st.error("After Entered a valid API key, please reload the web URL and Try")
 
     if "api_key" not in st.session_state:
         return  # Stop execution if API key is missing or invalid
