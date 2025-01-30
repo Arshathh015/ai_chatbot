@@ -1,6 +1,17 @@
 import streamlit as st
 import google.generativeai as generativeai
 
+# Function to check API key validity
+def is_valid_api_key(api_key):
+    """Check if the provided API key is valid by making a simple test request."""
+    try:
+        generativeai.configure(api_key=api_key)
+        model = generativeai.GenerativeModel("gemini-pro")
+        response = model.generate_content("Hello")  # Test API call
+        return bool(response)  # If response is valid, return True
+    except Exception:
+        return False  # Invalid API key
+
 # Sidebar Component
 def st_sidebar():
     with st.sidebar:
@@ -61,19 +72,27 @@ def main():
 
     # Request user to input their Google API key
     st.markdown("""
-        🗝️ To use this chatbot, you need a Google Gemini API key. 
-        If you don't have one, you can get it from [here](https://console.cloud.google.com/).
+        🗝️ To use this chatbot, you need a Google Gemini API key.  
+        **[Click here to enable Gemini API](https://console.cloud.google.com/marketplace/product/google/generativelanguage.googleapis.com?q=search&referrer=search&project=chatbot-449404&supportedpurview=project)**  
+        Once enabled, enter your API key below:
     """, unsafe_allow_html=True)
 
     # API Key Input Field
     Google_API_KEY = st.text_input("Enter your Google Gemini API key:", type="password")
 
-    if not Google_API_KEY:
-        st.error("⚠️ Please provide a valid API key to proceed.")
-        return
+    if Google_API_KEY:
+        if is_valid_api_key(Google_API_KEY):
+            st.success("✅ API Key is valid! Reloading...")
+            st.session_state["api_key"] = Google_API_KEY
+            st.experimental_rerun()  # Reload the page when API key is valid
+        else:
+            st.error("❌ Invalid API Key! Please enter a valid key.")
+
+    if "api_key" not in st.session_state:
+        return  # Stop execution if API key is missing or invalid
 
     # Configure Google Gemini AI with the user's API key
-    generativeai.configure(api_key=Google_API_KEY)
+    generativeai.configure(api_key=st.session_state["api_key"])
 
     llm = generativeai.GenerativeModel("gemini-pro")
     st_sidebar()
